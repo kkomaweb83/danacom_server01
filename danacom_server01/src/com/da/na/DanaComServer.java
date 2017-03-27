@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class DanaComServer implements Runnable  {
 	ServerSocket ss;
 	Socket s = null;
@@ -22,7 +23,8 @@ public class DanaComServer implements Runnable  {
 	PreparedStatement ptmt = null;
 	ResultSet rs = null;
 	
-	List<String> memComIdList = new ArrayList<>(); 
+	// 로그인 성공 회원
+	ArrayList<DanaComPlayer> danaComPlayerList = new ArrayList<>();
 	
 	public DanaComServer() {
 		try {
@@ -38,7 +40,6 @@ public class DanaComServer implements Runnable  {
 	public void run() {
 		DanaComProtocol readPort = null;
 		DanaComProtocol writePort = null;
-		MemComVo memComReadVo = null;
 		MemComVo memComWriteVo = null;
 		DanaComDao dao = null;
 		
@@ -48,23 +49,16 @@ public class DanaComServer implements Runnable  {
 				ois = new ObjectInputStream(s.getInputStream());
 				oos = new ObjectOutputStream(s.getOutputStream());
 				
+				DanaComPlayer player = new DanaComPlayer(s, this);
+				danaComPlayerList.add(player);
+				player.start();
+				
+				/*
 				readPort = (DanaComProtocol)ois.readObject();
 				dao = new DanaComDao();
 				
-				switch(readPort.getP_cmd()){
-				case 100:  // 로그인
-					memComWriteVo = dao.getLoginChk(readPort.getMemComVo());
-					if(memComWriteVo.getCmd() == 101){
-						memComIdList.add(memComWriteVo.getMem_name());
-					}
-					writePort = new DanaComProtocol();
-					writePort.setP_cmd(100);
-					writePort.setMemComVo(memComWriteVo);
-					
-					oos.writeObject(writePort);
-					oos.flush();
-					break;
-				case 200: // ID 중복검사
+				// ID 중복검사
+				if(readPort.getP_cmd() == 200){
 					memComWriteVo = dao.getDupId(readPort.getMemComVo());
 					
 					writePort = new DanaComProtocol();
@@ -73,8 +67,9 @@ public class DanaComServer implements Runnable  {
 					
 					oos.writeObject(writePort);
 					oos.flush();
-					break;
-				case 300: // 회원가입
+					
+				// 회원가입
+				}else if(readPort.getP_cmd() == 300){
 					memComWriteVo = dao.insertMember(readPort.getMemComVo());
 					
 					writePort = new DanaComProtocol();
@@ -83,17 +78,13 @@ public class DanaComServer implements Runnable  {
 					
 					oos.writeObject(writePort);
 					oos.flush();
-					break;
-				case 2001: // 접속회원 목록
-					writePort = new DanaComProtocol();
-					writePort.setP_cmd(2001);
-					writePort.setMemComIdList(memComIdList);
-					writePort.setMemComVo(memComWriteVo);
 					
-					oos.writeObject(writePort);
-					oos.flush();
-					break;
+				}else{
+					DanaComPlayer player = new DanaComPlayer(s, this);
+					danaComPlayerList.add(player);
+					new Thread(player).start();
 				}
+				*/
 			}
 			
 		} catch (Exception e) {
@@ -107,6 +98,16 @@ public class DanaComServer implements Runnable  {
 				System.out.println(e2);
 			}
 		}
+	}
+	
+	// 로그인한 전체회원 목록
+	public List<String> getUsers(){
+		List<String> memIdList = new ArrayList<>();
+		for(DanaComPlayer k : danaComPlayerList){
+			memIdList.add(k.getMem_id());
+		}
+		
+		return memIdList;
 	}
 	
 	public static void main(String[] args) {
