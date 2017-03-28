@@ -19,7 +19,7 @@ public class DanaComDao {
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 			
-			String url = "jdbc:oracle:thin:@localhost:1521:java";  // java
+			String url = "jdbc:oracle:thin:@localhost:1521:xe";  // java
 			String user = "danacom"; // id
 			String password = "oracle";
 			conn = DriverManager.getConnection(url, user, password);

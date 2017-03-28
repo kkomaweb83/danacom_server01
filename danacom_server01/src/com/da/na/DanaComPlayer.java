@@ -10,7 +10,7 @@ public class DanaComPlayer extends Thread {
 	ObjectInputStream ois;
 	ObjectOutputStream oos;
 	
-	private String mem_id;
+	private String mem_id = "";
 	
 	public DanaComPlayer() {
 	}
@@ -42,9 +42,10 @@ public class DanaComPlayer extends Thread {
 		DanaComDao dao = null;
 		
 		try {
-			while(true){
+			dana_player : while(true){
 				readPort = (DanaComProtocol)ois.readObject();
 				dao = new DanaComDao();
+				System.out.println("11 : " + readPort.getP_cmd());
 				
 				switch(readPort.getP_cmd()){
 				case 100:  // 로그인
@@ -54,19 +55,49 @@ public class DanaComPlayer extends Thread {
 					}
 					
 					writePort = new DanaComProtocol();
-					writePort.setP_cmd(110);
+					writePort.setP_cmd(100);
 					writePort.setMemComVo(memComWriteVo);
 					
 					oos.writeObject(writePort);
 					oos.flush();
 					break;
-				case 2001: // 접속회원 목록
+				case 109:  // 로그아웃
+					danaComServer.delPlayer(this);
+					
 					writePort = new DanaComProtocol();
-					writePort.setP_cmd(2011);
+					writePort.setP_cmd(2001);
 					writePort.setMemComIdList(danaComServer.getUsers());
+					
+					danaComServer.sendMsgAllPlayer(writePort);
+					break;
+				case 200:  // ID 중복검사
+					memComWriteVo = dao.getDupId(readPort.getMemComVo());
+					
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(200);
+					writePort.setMemComVo(memComWriteVo);
 					
 					oos.writeObject(writePort);
 					oos.flush();
+					
+					break dana_player;
+				case 300:  // 회원가입
+					memComWriteVo = dao.insertMember(readPort.getMemComVo());
+					
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(300);
+					writePort.setMemComVo(memComWriteVo);
+					
+					oos.writeObject(writePort);
+					oos.flush();
+					
+					break dana_player;
+				case 2001: // 접속회원 목록
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(2001);
+					writePort.setMemComIdList(danaComServer.getUsers());
+					
+					danaComServer.sendMsgAllPlayer(writePort);
 					break;
 				}
 			}
@@ -78,6 +109,7 @@ public class DanaComPlayer extends Thread {
 				if(s != null) s.close();
 				if(ois != null) ois.close();
 				if(oos != null) oos.close();
+				danaComServer.delPlayer(this);
 			} catch (Exception e2) {
 				System.out.println(e2);
 			}
