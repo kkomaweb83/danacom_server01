@@ -53,11 +53,13 @@ public class DanaComServer implements Runnable  {
 	}
 	
 	// 로그인한 전체회원 목록
-	public List<String> getUsers(){
+	public List<String> getUsers(int type, DanaComPlayer danaComPlayer){
 		List<String> memIdList = new ArrayList<>();
 		for(DanaComPlayer k : danaComPlayerList){
 			if(!"".equals(k.getMem_id())){
-				memIdList.add(k.getMem_id());
+				if(!(type == 9 && k == danaComPlayer)){
+					memIdList.add(k.getMem_id());
+				}
 			}
 		}
 		
@@ -86,5 +88,25 @@ public class DanaComServer implements Runnable  {
 	
 	public static void main(String[] args) {
 		new DanaComServer();
+	}
+
+	// 로그아웃한 내역을 회원모두에게 결과를 보냄
+	public void sendMsgAllPlayerOut(DanaComProtocol writePort, DanaComPlayer danaComPlayer) {
+		try {
+			for(DanaComPlayer k : danaComPlayerList){
+				if(!"".equals(k.getMem_id())){
+					if(k == danaComPlayer){
+						writePort.setP_cmd(2009);
+					}else{
+						writePort.setP_cmd(2001);
+					}
+					k.oos.writeObject(writePort);
+					k.oos.flush();
+				}
+			}
+		} catch (Exception e) {
+			System.out.println(e);
+			e.printStackTrace();
+		}
 	}
 }

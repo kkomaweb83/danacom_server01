@@ -45,7 +45,7 @@ public class DanaComPlayer extends Thread {
 			dana_player : while(true){
 				readPort = (DanaComProtocol)ois.readObject();
 				dao = new DanaComDao();
-				System.out.println("11 : " + readPort.getP_cmd());
+				System.out.println("server run() : " + readPort.getP_cmd());
 				
 				switch(readPort.getP_cmd()){
 				case 100:  // 로그인
@@ -62,14 +62,21 @@ public class DanaComPlayer extends Thread {
 					oos.flush();
 					break;
 				case 109:  // 로그아웃
-					danaComServer.delPlayer(this);
-					
 					writePort = new DanaComProtocol();
 					writePort.setP_cmd(2001);
-					writePort.setMemComIdList(danaComServer.getUsers());
+					writePort.setMemComIdList(danaComServer.getUsers(9,this));
 					
-					danaComServer.sendMsgAllPlayer(writePort);
-					break;
+					danaComServer.sendMsgAllPlayerOut(writePort, this);
+					danaComServer.delPlayer(this);
+					break dana_player;
+				case 119:  // 종료에 의한 로그아웃
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(119);
+					writePort.setMemComIdList(danaComServer.getUsers(9,this));
+					
+					danaComServer.sendMsgAllPlayerOut(writePort, this);
+					danaComServer.delPlayer(this);
+					break dana_player;
 				case 200:  // ID 중복검사
 					memComWriteVo = dao.getDupId(readPort.getMemComVo());
 					
@@ -80,7 +87,7 @@ public class DanaComPlayer extends Thread {
 					oos.writeObject(writePort);
 					oos.flush();
 					
-					break dana_player;
+					break;
 				case 300:  // 회원가입
 					memComWriteVo = dao.insertMember(readPort.getMemComVo());
 					
@@ -91,14 +98,18 @@ public class DanaComPlayer extends Thread {
 					oos.writeObject(writePort);
 					oos.flush();
 					
-					break dana_player;
+					break;
 				case 2001: // 접속회원 목록
 					writePort = new DanaComProtocol();
 					writePort.setP_cmd(2001);
-					writePort.setMemComIdList(danaComServer.getUsers());
+					writePort.setMemComIdList(danaComServer.getUsers(1,this));
 					
 					danaComServer.sendMsgAllPlayer(writePort);
 					break;
+				case 9999: // 접속 종료
+					s.shutdownInput();
+					s.shutdownOutput();
+					break dana_player;
 				}
 			}
 			
@@ -106,9 +117,9 @@ public class DanaComPlayer extends Thread {
 			System.out.println(e);
 		} finally {
 			try {
-				if(s != null) s.close();
 				if(ois != null) ois.close();
 				if(oos != null) oos.close();
+				if(s != null && !s.isClosed()) s.close();
 				danaComServer.delPlayer(this);
 			} catch (Exception e2) {
 				System.out.println(e2);
