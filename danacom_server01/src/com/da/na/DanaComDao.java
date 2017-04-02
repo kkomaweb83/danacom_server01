@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DanaComDao {
 	
@@ -19,7 +21,7 @@ public class DanaComDao {
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 			
-			String url = "jdbc:oracle:thin:@localhost:1521:xe";  // java
+			String url = "jdbc:oracle:thin:@localhost:1521:java";  // java
 			String user = "danacom"; // id
 			String password = "oracle";
 			conn = DriverManager.getConnection(url, user, password);
@@ -158,6 +160,52 @@ public class DanaComDao {
 		}
 		
 		return memComWriteVo; 
+	}
+
+	public List<ProClassVo> getPclList(String pcl_upperno, String mode) {
+		StringBuffer sql = new StringBuffer();
+		List<ProClassVo> class_list = new ArrayList<>();
+		
+		try {
+			sql.append(" SELECT A.PCL_NO, A.PCL_NAME, A.PCL_STEP, A.PCL_BASIS");
+			sql.append(" , NVL(A.PCL_UPPERNO, 'NULL') PCL_UPPERNO");
+			sql.append(" , NVL(B.PCL_NAME, 'NULL') PA_PCL_NAME");
+			sql.append(" FROM PRO_CLASS A, PRO_CLASS B ");
+			sql.append(" WHERE A.PCL_UPPERNO = B.PCL_NO(+) ");
+			sql.append(" AND A.PCL_UPPERNO = ?");
+			sql.append(" ORDER BY A.PCL_NO");
+			System.out.println(sql.toString());
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setString(1, pcl_upperno);
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				ProClassVo vo = new ProClassVo();
+				vo.setPcl_no(rs.getString("PCL_NO")); 
+				vo.setPcl_name(rs.getString("PCL_NAME"));
+				vo.setPcl_step(rs.getInt("PCL_STEP"));
+				vo.setPcl_basis(rs.getString("PCL_BASIS"));
+				vo.setPcl_upperno(rs.getString("PCL_UPPERNO"));
+				vo.setPa_pcl_name(rs.getString("PA_PCL_NAME"));
+				class_list.add(vo);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return class_list;
 	}
 	
 }

@@ -9,6 +9,7 @@ public class DanaComProtocol implements Serializable {
 	private int p_cmd;
 	private List<String> memComIdList;
 	private MemComVo memComVo;
+	private List<ProClassVo> class_list;
 	
 	public DanaComProtocol(){
 	}
@@ -41,6 +42,12 @@ public class DanaComProtocol implements Serializable {
 
 	public void setMemComVo(MemComVo memComVo) {
 		this.memComVo = memComVo;
+	}
+	public List<ProClassVo> getClass_list() {
+		return class_list;
+	}
+	public void setClass_list(List<ProClassVo> class_list) {
+		this.class_list = class_list;
 	}
 	
 }

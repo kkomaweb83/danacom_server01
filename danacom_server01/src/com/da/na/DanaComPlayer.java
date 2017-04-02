@@ -3,6 +3,7 @@ package com.da.na;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 
 public class DanaComPlayer extends Thread {
 	Socket s;
@@ -39,6 +40,7 @@ public class DanaComPlayer extends Thread {
 		DanaComProtocol readPort = null;
 		DanaComProtocol writePort = null;
 		MemComVo memComWriteVo = null;
+		List<ProClassVo> class_list = null;
 		DanaComDao dao = null;
 		
 		try {
@@ -105,6 +107,22 @@ public class DanaComPlayer extends Thread {
 					writePort.setMemComIdList(danaComServer.getUsers(1,this));
 					
 					danaComServer.sendMsgAllPlayer(writePort);
+					break;
+				case 3001: // 견적서 등록폼 - 상품분류 조회
+					class_list = dao.getPclList("NULL", "go");
+					for(int i=0; i < class_list.size(); i++){
+						if(i > 1) break;
+						ProClassVo vo = (ProClassVo)class_list.get(i);
+						vo.setPcl_list(dao.getPclList(vo.getPcl_no(),"quit"));
+					}
+					
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(3001);
+					writePort.setClass_list(class_list);
+					
+					oos.writeObject(writePort);
+					oos.flush();
+					
 					break;
 				case 9999: // 접속 종료
 					s.shutdownInput();
