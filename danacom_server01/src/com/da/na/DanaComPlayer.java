@@ -40,7 +40,6 @@ public class DanaComPlayer extends Thread {
 		DanaComProtocol readPort = null;
 		DanaComProtocol writePort = null;
 		MemComVo memComWriteVo = null;
-		List<ProClassVo> class_list = null;
 		DanaComDao dao = null;
 		
 		try {
@@ -109,7 +108,7 @@ public class DanaComPlayer extends Thread {
 					danaComServer.sendMsgAllPlayer(writePort);
 					break;
 				case 3001: // 견적서 등록폼 - 상품분류 조회
-					class_list = dao.getPclList("NULL", "go");
+					List<ProClassVo> class_list = dao.getPclList("NULL", "go");
 					for(int i=0; i < class_list.size(); i++){
 						if(i > 1) break;
 						ProClassVo vo = (ProClassVo)class_list.get(i);
@@ -123,6 +122,43 @@ public class DanaComPlayer extends Thread {
 					oos.writeObject(writePort);
 					oos.flush();
 					
+					break;
+				case 3011: // 견적서 등록폼 - 상품검색 조건(제조사, 상품분류) 조회
+					List<ProClassVo> tempList = null;
+					ProClassVo pclVO = null;
+					
+					List<MakerVo> mkr_list = dao.getMkrList(readPort.getPcl_no(), "go");
+					List<ProClassVo> pclList = dao.getPclList(readPort.getPcl_no(), "go");
+					if(pclList != null){
+						for(int i=0; i < pclList.size(); i++){
+							pclVO = (ProClassVo)pclList.get(i);
+							pclVO.setPcl_list(dao.getPclList(pclVO.getPcl_no(), "go"));
+							tempList = pclVO.getPcl_list();
+							if(tempList != null){
+								for(int j=0; j < tempList.size(); j++){
+									pclVO = (ProClassVo)tempList.get(j);
+									pclVO.setPcl_list(dao.getPclList(pclVO.getPcl_no(),"go"));
+								}
+							}
+						}
+					}
+					String mainPclName = dao.getMainPclName(readPort.getPcl_no(), "quit");
+					
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(3011);
+					writePort.setPcl_no(readPort.getPcl_no());
+					writePort.setPcl_name(mainPclName);
+					writePort.setMkr_list(mkr_list);
+					writePort.setClass_list(pclList);
+					
+					oos.writeObject(writePort);
+					oos.flush();
+					
+					break;
+				case 3021: // 견적서 등록폼 - 기본 상품검색 조회
+					List<ProductVo> proList = dao.getProMainList(readPort, "quit");
+					break;
+				case 3031: // 견적서 등록폼 - 상품검색 조회버튼
 					break;
 				case 9999: // 접속 종료
 					s.shutdownInput();

@@ -21,7 +21,7 @@ public class DanaComDao {
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 			
-			String url = "jdbc:oracle:thin:@localhost:1521:java";  // java
+			String url = "jdbc:oracle:thin:@localhost:1521:xe";  // java
 			String user = "danacom"; // id
 			String password = "oracle";
 			conn = DriverManager.getConnection(url, user, password);
@@ -206,6 +206,142 @@ public class DanaComDao {
 		}
 		
 		return class_list;
+	}
+
+	public List<MakerVo> getMkrList(String pcl_upperno, String mode) {
+		StringBuffer sql = new StringBuffer();
+		List<MakerVo> mkr_list = new ArrayList<>();
+		
+		try {
+			sql.append(" SELECT MKR_NO, MKR_NAME, MKR_PCL_NO, PCL_NAME");
+			sql.append(" FROM MAKER A, PRO_CLASS B");
+			sql.append(" WHERE A.MKR_PCL_NO = B.PCL_NO");
+			sql.append(" AND MKR_PCL_NO = ?");
+			sql.append(" ORDER BY MKR_NO");
+			System.out.println(sql.toString());
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setString(1, pcl_upperno);
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				MakerVo vo = new MakerVo();
+				vo.setMkr_no(rs.getInt("MKR_NO"));
+				vo.setMkr_name(rs.getString("MKR_NAME"));
+				vo.setMkr_pcl_no(rs.getString("MKR_PCL_NO"));
+				vo.setPcl_name(rs.getString("PCL_NAME"));
+
+				mkr_list.add(vo);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return mkr_list;
+	}
+
+	public String getMainPclName(String pcl_upperno, String mode) {
+		StringBuffer sql = new StringBuffer();
+		StringBuffer pclName = new StringBuffer("");
+		
+		try {
+			sql.append(" SELECT PCL_NAME FROM PRO_CLASS");
+			sql.append(" WHERE PCL_NO = ?");
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setString(1, pcl_upperno);
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				pclName.append(rs.getString("PCL_NAME"));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return pclName.toString();
+	}
+
+	public List<ProductVo> getProMainList(DanaComProtocol readPort, String mode) {
+		StringBuffer sql = new StringBuffer();
+		List<ProductVo> proList = new ArrayList<>();
+		
+		try {
+			sql.append(" SELECT PRO_NO, PRO_NAME, PRO_DISPRICE, PRO_REALPRICE");
+			sql.append(" , TO_CHAR(PRO_DISPRICE, '999,999,999,999')||'원' PRO_CH_PRICE");
+			sql.append(" , TO_CHAR(PRO_DISPRICE, '999,999,999,999') PRO_CH2_PRICE");
+			sql.append(" , TO_CHAR(PRO_REGDATE, 'YYYY/MM/DD') PRO_REGDATE");
+			sql.append(" , PSM_CONENT");
+			sql.append(" , PMG_FILE");
+			sql.append(" , PRO_PCL_NO");
+			sql.append(" , PRO_MKR_NO");
+			sql.append(" , RPAD(PRO_NAME, 60, ' ') PPT_PRO_NAME");
+			sql.append(" FROM PRODUCT, PRO_SUMM, PRO_IMG ");
+			sql.append(" WHERE PRO_NO = PSM_PRO_NO ");
+			sql.append(" AND PRO_NO = PMG_PRO_NO ");
+			sql.append(" AND PRO_PCL_NO = ? ");
+			sql.append(" AND PMG_IDT_NO = 1 ");
+			sql.append(" ORDER BY PRO_REGDATE DESC");
+			System.out.println(sql.toString());
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setString(1, readPort.getPcl_no());
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				ProductVo vo = new ProductVo();
+				vo.setPro_no(rs.getInt("PRO_NO"));
+				vo.setPro_name(rs.getString("PRO_NAME"));
+				vo.setPro_disprice(rs.getInt("PRO_DISPRICE"));
+				vo.setPro_realprice(rs.getInt("PRO_REALPRICE"));
+				vo.setPro_ch_price(rs.getString("PRO_CH_PRICE"));
+				vo.setPro_ch2_price(rs.getString("PRO_CH2_PRICE"));
+				vo.setPro_regdate(rs.getString("PRO_REGDATE"));
+				vo.setPsm_conent(rs.getString("PSM_CONENT"));
+				vo.setPmg_file(rs.getString("PMG_FILE"));
+				vo.setPro_pcl_no(rs.getString("PRO_PCL_NO"));
+				vo.setPro_mkr_no(rs.getInt("PRO_MKR_NO"));
+				vo.setPpt_pro_name(rs.getString("PPT_PRO_NAME"));
+				proList.add(vo);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return proList;
 	}
 	
 }
