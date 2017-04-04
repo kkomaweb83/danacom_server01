@@ -157,8 +157,25 @@ public class DanaComPlayer extends Thread {
 					break;
 				case 3021: // 견적서 등록폼 - 기본 상품검색 조회
 					List<ProductVo> proList = dao.getProMainList(readPort, "quit");
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(3021);
+					writePort.setPro_list(proList);
+					
+					oos.writeObject(writePort);
+					oos.flush();
+					
 					break;
 				case 3031: // 견적서 등록폼 - 상품검색 조회버튼
+					break;
+				case 3051: // 회원 견적서 등록
+					int vblMaxNo= dao.getVblMaxNo("go");
+					readPort.getVirBillVo().setVbl_no(vblMaxNo);
+					dao.vblInsert(readPort.getVirBillVo(), "go");
+					List<VblDetVo> vdtList = readPort.getVdt_list();
+					for (int i = 0; i < vdtList.size(); i++) {
+						dao.vdtInsert((VblDetVo)vdtList.get(i), "go");
+					}
+					dao.getVblMaxNo("quit");
 					break;
 				case 9999: // 접속 종료
 					s.shutdownInput();

@@ -343,5 +343,108 @@ public class DanaComDao {
 		
 		return proList;
 	}
+
+	public int getVblMaxNo(String mode) {
+		StringBuffer sql = new StringBuffer();
+		StringBuffer vbl_no = new StringBuffer("");
+		
+		try {
+			sql.append(" SELECT NVL(MAX(VBL_NO), 0)+1 FROM VIR_BILL");
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				vbl_no.append(rs.getString(1));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return Integer.parseInt(vbl_no.toString());
+	}
+
+	public void vblInsert(VirBillVo virBillVo, String mode) {
+		StringBuffer sql = new StringBuffer();
+		
+		try {
+			sql.append(" INSERT INTO VIR_BILL");
+			sql.append(" (VBL_NO, VBL_MEM_NO, VBL_BOR_ANSWER, VBL_TITLE, VBL_DATE) VALUES ");
+			sql.append(" (?, ?, ?, ?, SYSDATE)");
+			//sql.append(" (#vbl_no#, #vbl_mem_no#, #vbl_bor_answer#, #vbl_title#, SYSDATE)");
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setInt(1, virBillVo.getVbl_no());
+			ptmt.setInt(2, virBillVo.getVbl_mem_no());
+			ptmt.setString(3, virBillVo.getVbl_bor_answer());
+			ptmt.setString(4, virBillVo.getVbl_title());
+			int res = ptmt.executeUpdate();
+			if(res > 0){
+				System.out.println("견적서 등록성공");
+			}else{
+				System.out.println("견적서 등록실패");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+	}
+
+	public void vdtInsert(VblDetVo vblDetVo, String mode) {
+		StringBuffer sql = new StringBuffer();
+		
+		try {
+			sql.append(" INSERT INTO VBL_DET");
+			sql.append(" (VDT_NO, VDT_VBL_NO, VDT_QUANTITY, VDT_PRO_NO) VALUES ");
+			sql.append(" ((SELECT NVL(MAX(VDT_NO), 0)+1 FROM VBL_DET) ");
+			sql.append(" , ?, ?, ?) ");
+			//sql.append(" , #vdt_vbl_no#, #vdt_quantity#, #vdt_pro_no#) ");
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setInt(1, vblDetVo.getVdt_vbl_no());
+			ptmt.setInt(2, vblDetVo.getVdt_quantity());
+			ptmt.setInt(3, vblDetVo.getVdt_pro_no());
+			int res = ptmt.executeUpdate();
+			if(res > 0){
+				System.out.println("견적서 등록성공");
+			}else{
+				System.out.println("견적서 등록실패");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+	}
 	
 }

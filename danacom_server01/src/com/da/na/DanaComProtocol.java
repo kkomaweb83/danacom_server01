@@ -11,6 +11,9 @@ public class DanaComProtocol implements Serializable {
 	private MemComVo memComVo;
 	private List<ProClassVo> class_list;
 	private List<MakerVo> mkr_list;
+	private List<ProductVo> pro_list;
+	private VirBillVo virBillVo;
+	private List<VblDetVo> vdt_list;
 	private String pcl_no;
 	private String pcl_name;
 	
@@ -69,6 +72,24 @@ public class DanaComProtocol implements Serializable {
 	}
 	public void setPcl_name(String pcl_name) {
 		this.pcl_name = pcl_name;
+	}
+	public List<ProductVo> getPro_list() {
+		return pro_list;
+	}
+	public void setPro_list(List<ProductVo> pro_list) {
+		this.pro_list = pro_list;
+	}
+	public VirBillVo getVirBillVo() {
+		return virBillVo;
+	}
+	public void setVirBillVo(VirBillVo virBillVo) {
+		this.virBillVo = virBillVo;
+	}
+	public List<VblDetVo> getVdt_list() {
+		return vdt_list;
+	}
+	public void setVdt_list(List<VblDetVo> vdt_list) {
+		this.vdt_list = vdt_list;
 	}
 	
 }
