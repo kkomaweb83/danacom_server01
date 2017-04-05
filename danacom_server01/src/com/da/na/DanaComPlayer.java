@@ -4,6 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
+import java.util.Map;
 
 public class DanaComPlayer extends Thread {
 	Socket s;
@@ -170,12 +171,22 @@ public class DanaComPlayer extends Thread {
 				case 3051: // 회원 견적서 등록
 					int vblMaxNo= dao.getVblMaxNo("go");
 					readPort.getVirBillVo().setVbl_no(vblMaxNo);
-					dao.vblInsert(readPort.getVirBillVo(), "go");
+					Map<String, String> resultMap = dao.vblInsert(readPort.getVirBillVo(), "go");
+					
 					List<VblDetVo> vdtList = readPort.getVdt_list();
 					for (int i = 0; i < vdtList.size(); i++) {
-						dao.vdtInsert((VblDetVo)vdtList.get(i), "go");
+						dao.vdtInsert((VblDetVo)vdtList.get(i), vblMaxNo, "go");
 					}
 					dao.getVblMaxNo("quit");
+					
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(3051);
+					writePort.setR_msg(resultMap.get("r_msg"));
+					writePort.setR_cmd(Integer.parseInt(resultMap.get("r_cmd")));
+					
+					oos.writeObject(writePort);
+					oos.flush();
+					
 					break;
 				case 9999: // 접속 종료
 					s.shutdownInput();

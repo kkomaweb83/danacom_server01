@@ -16,6 +16,8 @@ public class DanaComProtocol implements Serializable {
 	private List<VblDetVo> vdt_list;
 	private String pcl_no;
 	private String pcl_name;
+	private String r_msg;
+	private int r_cmd;
 	
 	public DanaComProtocol(){
 	}
@@ -90,6 +92,18 @@ public class DanaComProtocol implements Serializable {
 	}
 	public void setVdt_list(List<VblDetVo> vdt_list) {
 		this.vdt_list = vdt_list;
+	}
+	public String getR_msg() {
+		return r_msg;
+	}
+	public void setR_msg(String r_msg) {
+		this.r_msg = r_msg;
+	}
+	public int getR_cmd() {
+		return r_cmd;
+	}
+	public void setR_cmd(int r_cmd) {
+		this.r_cmd = r_cmd;
 	}
 	
 }

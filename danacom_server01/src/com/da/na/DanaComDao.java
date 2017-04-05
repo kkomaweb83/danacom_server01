@@ -5,7 +5,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DanaComDao {
 	
@@ -375,14 +377,14 @@ public class DanaComDao {
 		return Integer.parseInt(vbl_no.toString());
 	}
 
-	public void vblInsert(VirBillVo virBillVo, String mode) {
+	public Map<String, String> vblInsert(VirBillVo virBillVo, String mode) {
 		StringBuffer sql = new StringBuffer();
+		Map<String, String> resultMap = new HashMap<>();
 		
 		try {
 			sql.append(" INSERT INTO VIR_BILL");
 			sql.append(" (VBL_NO, VBL_MEM_NO, VBL_BOR_ANSWER, VBL_TITLE, VBL_DATE) VALUES ");
 			sql.append(" (?, ?, ?, ?, SYSDATE)");
-			//sql.append(" (#vbl_no#, #vbl_mem_no#, #vbl_bor_answer#, #vbl_title#, SYSDATE)");
 			ptmt = conn.prepareStatement(sql.toString());
 			ptmt.setInt(1, virBillVo.getVbl_no());
 			ptmt.setInt(2, virBillVo.getVbl_mem_no());
@@ -390,9 +392,11 @@ public class DanaComDao {
 			ptmt.setString(4, virBillVo.getVbl_title());
 			int res = ptmt.executeUpdate();
 			if(res > 0){
-				System.out.println("견적서 등록성공");
+				resultMap.put("r_msg", "견적서 등록성공");
+				resultMap.put("r_cmd", "301");
 			}else{
-				System.out.println("견적서 등록실패");
+				resultMap.put("r_msg", "견적서 등록실패");
+				resultMap.put("r_cmd", "302");
 			}
 			
 		} catch (Exception e) {
@@ -409,9 +413,10 @@ public class DanaComDao {
 			}
 		}
 		
+		return resultMap;
 	}
 
-	public void vdtInsert(VblDetVo vblDetVo, String mode) {
+	public void vdtInsert(VblDetVo vblDetVo, int vdt_vbl_no, String mode) {
 		StringBuffer sql = new StringBuffer();
 		
 		try {
@@ -419,9 +424,8 @@ public class DanaComDao {
 			sql.append(" (VDT_NO, VDT_VBL_NO, VDT_QUANTITY, VDT_PRO_NO) VALUES ");
 			sql.append(" ((SELECT NVL(MAX(VDT_NO), 0)+1 FROM VBL_DET) ");
 			sql.append(" , ?, ?, ?) ");
-			//sql.append(" , #vdt_vbl_no#, #vdt_quantity#, #vdt_pro_no#) ");
 			ptmt = conn.prepareStatement(sql.toString());
-			ptmt.setInt(1, vblDetVo.getVdt_vbl_no());
+			ptmt.setInt(1, vdt_vbl_no);
 			ptmt.setInt(2, vblDetVo.getVdt_quantity());
 			ptmt.setInt(3, vblDetVo.getVdt_pro_no());
 			int res = ptmt.executeUpdate();
