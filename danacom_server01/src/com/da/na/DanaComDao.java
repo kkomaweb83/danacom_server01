@@ -450,5 +450,50 @@ public class DanaComDao {
 		}
 		
 	}
+
+	public List<VirBillVo> getVblList(DanaComProtocol readPort, String mode) {
+		StringBuffer sql = new StringBuffer();
+		List<VirBillVo> vir_list = new ArrayList<>();
+		
+		try {
+			sql.append(" SELECT VBL_NO, VBL_MEM_NO, VBL_BOR_ANSWER");
+			sql.append(" , RPAD(VBL_TITLE, 50, ' ') VBL_TITLE");
+			sql.append(" , TO_CHAR(VBL_DATE, 'YYYY-MM-DD HH24:MI') VBL_DATE");
+			sql.append(" FROM VIR_BILL");
+			sql.append(" WHERE VBL_MEM_NO = ?");
+			sql.append(" ORDER BY VBL_NO DESC");
+			System.out.println(sql.toString());
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setInt(1, readPort.getMemComVo().getMem_no());
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				VirBillVo vo = new VirBillVo();
+				vo.setVbl_no(rs.getInt("VBL_NO"));
+				vo.setVbl_mem_no(rs.getInt("VBL_MEM_NO"));
+				vo.setVbl_bor_answer(rs.getString("VBL_BOR_ANSWER"));
+				vo.setVbl_title(rs.getString("VBL_TITLE"));
+				vo.setVbl_date(rs.getString("VBL_DATE"));
+
+				vir_list.add(vo);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return vir_list;
+	}
 	
 }

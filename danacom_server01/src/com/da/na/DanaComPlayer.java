@@ -188,6 +188,16 @@ public class DanaComPlayer extends Thread {
 					oos.flush();
 					
 					break;
+				case 3061: // 회원 견적서 리스트 조회
+					List<VirBillVo> vir_list = dao.getVblList(readPort, "quit");
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(3061);
+					writePort.setVir_list(vir_list);
+					
+					oos.writeObject(writePort);
+					oos.flush();
+					
+					break;
 				case 9999: // 접속 종료
 					s.shutdownInput();
 					s.shutdownOutput();
