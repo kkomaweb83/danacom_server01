@@ -496,4 +496,97 @@ public class DanaComDao {
 		return vir_list;
 	}
 	
+	public ProductVo getvVblProVo(ProClassVo pclVo, String mode) {
+		StringBuffer sql = new StringBuffer();
+		ProductVo proVo = new ProductVo();
+		
+		try {
+			sql.append(" SELECT PRO_NO, PRO_DISPRICE");
+			sql.append(" , TO_CHAR(PRO_DISPRICE, '999,999,999,999')||'원' PRO_CH_PRICE");
+			sql.append(" , TO_CHAR(PRO_DISPRICE, '999,999,999,999') PRO_CH2_PRICE");
+			sql.append(" , PRO_PCL_NO");
+			sql.append(" , RPAD(PRO_NAME, 60, ' ') PRO_NAME");
+			sql.append(" , VDT_QUANTITY AS PST_QUANTITY");
+			sql.append(" FROM PRODUCT, VBL_DET ");
+			sql.append(" WHERE VDT_PRO_NO = PRO_NO AND VDT_VBL_NO = ? ");
+			sql.append(" AND PRO_NO IN (SELECT VDT_PRO_NO FROM VBL_DET WHERE VDT_VBL_NO = ?) ");
+			sql.append(" AND PRO_PCL_NO = ? ");
+			System.out.println(sql.toString());
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setInt(1, pclVo.getPpt_no());
+			ptmt.setInt(2, pclVo.getPpt_no());
+			ptmt.setString(3, pclVo.getPcl_no());
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				proVo.setPro_no(rs.getInt("PRO_NO"));
+				proVo.setPro_disprice(rs.getInt("PRO_DISPRICE"));
+				proVo.setPro_ch_price(rs.getString("PRO_CH_PRICE"));
+				proVo.setPro_ch2_price(rs.getString("PRO_CH2_PRICE"));
+				proVo.setPro_pcl_no(rs.getString("PRO_PCL_NO"));
+				proVo.setPro_name(rs.getString("PRO_NAME"));
+				proVo.setPpt_pro_name(rs.getString("PRO_NAME"));
+				proVo.setPst_quantity(rs.getInt("PST_QUANTITY"));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return proVo;
+	}
+
+	public VirBillVo getVblVo(int vbl_no, String mode) {
+		StringBuffer sql = new StringBuffer();
+		VirBillVo vo = new VirBillVo();
+		
+		try {
+			sql.append(" SELECT VBL_NO, VBL_MEM_NO, VBL_BOR_ANSWER");
+			sql.append(" , VBL_TITLE");
+			sql.append(" , TO_CHAR(VBL_DATE, 'YYYY-MM-DD HH24:MI') VBL_DATE");
+			sql.append(" FROM VIR_BILL");
+			sql.append(" WHERE VBL_NO = ?");
+			sql.append(" ORDER BY VBL_NO DESC");
+			System.out.println(sql.toString());
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setInt(1, vbl_no);
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				vo.setVbl_no(rs.getInt("VBL_NO"));
+				vo.setVbl_mem_no(rs.getInt("VBL_MEM_NO"));
+				vo.setVbl_bor_answer(rs.getString("VBL_BOR_ANSWER"));
+				vo.setVbl_title(rs.getString("VBL_TITLE"));
+				vo.setVbl_date(rs.getString("VBL_DATE"));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return vo;
+	}
+	
 }
