@@ -188,6 +188,41 @@ public class DanaComPlayer extends Thread {
 					oos.flush();
 					
 					break;
+				case 3052: // 회원 견적서 수정
+					int vblMaxNo_u = readPort.getVirBillVo().getVbl_no();
+					Map<String, String> resultMap_u = dao.vblUpdate(readPort.getVirBillVo(), "go");
+					
+					dao.vdtDelete(vblMaxNo_u, "go");
+					
+					List<VblDetVo> vdtList_u = readPort.getVdt_list();
+					for (int i = 0; i < vdtList_u.size(); i++) {
+						dao.vdtInsert((VblDetVo)vdtList_u.get(i), vblMaxNo_u, "go");
+					}
+					dao.getVblMaxNo("quit");
+					
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(3052);
+					writePort.setR_msg(resultMap_u.get("r_msg"));
+					writePort.setR_cmd(Integer.parseInt(resultMap_u.get("r_cmd")));
+					
+					oos.writeObject(writePort);
+					oos.flush();
+					
+					break;
+				case 3053: // 회원 견적서 삭제
+					int vblMaxNo_d = readPort.getVirBillVo().getVbl_no();
+					dao.vdtDelete(vblMaxNo_d, "go");
+					Map<String, String> resultMap_d = dao.vblDelete(vblMaxNo_d, "quit");
+					
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(3053);
+					writePort.setR_msg(resultMap_d.get("r_msg"));
+					writePort.setR_cmd(Integer.parseInt(resultMap_d.get("r_cmd")));
+					
+					oos.writeObject(writePort);
+					oos.flush();
+					
+					break;
 				case 3061: // 회원 견적서 리스트 조회
 					List<VirBillVo> vir_list = dao.getVblList(readPort, "quit");
 					writePort = new DanaComProtocol();

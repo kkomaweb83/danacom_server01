@@ -588,5 +588,109 @@ public class DanaComDao {
 		
 		return vo;
 	}
+
+	public Map<String, String> vblUpdate(VirBillVo virBillVo, String mode) {
+		StringBuffer sql = new StringBuffer();
+		Map<String, String> resultMap = new HashMap<>();
+		
+		try {
+			sql.append(" UPDATE VIR_BILL SET");
+			sql.append(" VBL_TITLE = ? ");
+			sql.append(" , VBL_BOR_ANSWER = ? ");
+			sql.append(" WHERE VBL_NO = ? ");
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setString(1, virBillVo.getVbl_title());
+			ptmt.setString(2, virBillVo.getVbl_bor_answer());
+			ptmt.setInt(3, virBillVo.getVbl_no());
+			int res = ptmt.executeUpdate();
+			if(res > 0){
+				resultMap.put("r_msg", "견적서 수정성공");
+				resultMap.put("r_cmd", "311");
+			}else{
+				resultMap.put("r_msg", "견적서 수정실패");
+				resultMap.put("r_cmd", "312");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return resultMap;
+	}
+
+	public void vdtDelete(int vblMaxNo_u, String mode) {
+		StringBuffer sql = new StringBuffer();
+		
+		try {
+			sql.append(" DELETE FROM VBL_DET");
+			sql.append(" WHERE VDT_VBL_NO = ? ");
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setInt(1, vblMaxNo_u);
+			int res = ptmt.executeUpdate();
+			if(res > 0){
+				System.out.println("견적서 상세 삭제성공");
+			}else{
+				System.out.println("견적서 상세 삭제실패");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+	}
+
+	public Map<String, String> vblDelete(int vblMaxNo_d, String mode) {
+		StringBuffer sql = new StringBuffer();
+		Map<String, String> resultMap = new HashMap<>();
+		
+		try {
+			sql.append(" DELETE FROM VIR_BILL");
+			sql.append(" WHERE VBL_NO = ? ");
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setInt(1, vblMaxNo_d);
+			int res = ptmt.executeUpdate();
+			if(res > 0){
+				resultMap.put("r_msg", "견적서 삭제성공");
+				resultMap.put("r_cmd", "331");
+			}else{
+				resultMap.put("r_msg", "견적서 삭제실패");
+				resultMap.put("r_cmd", "332");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return resultMap;
+	}
 	
 }
