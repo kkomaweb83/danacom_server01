@@ -113,8 +113,9 @@ public class DanaComPlayer extends Thread {
 					for(int i=0; i < class_list.size(); i++){
 						if(i > 1) break;
 						ProClassVo vo = (ProClassVo)class_list.get(i);
-						vo.setPcl_list(dao.getPclList(vo.getPcl_no(),"quit"));
+						vo.setPcl_list(dao.getPclList(vo.getPcl_no(),"go"));
 					}
+					dao.getVblMaxNo("quit");
 					
 					writePort = new DanaComProtocol();
 					writePort.setP_cmd(3001);
