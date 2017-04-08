@@ -306,6 +306,42 @@ public class DanaComPlayer extends Thread {
 					oos.flush();
 					
 					break;
+				case 3080: // 공유 견적서등록
+					int vblMaxNo_b = readPort.getVirBillVo().getVbl_no();
+					int vbbMaxNo = dao.getVbbMaxNo("go");
+					readPort.getVirBillVo().setVbb_no(vbbMaxNo);
+					
+					dao.vblUpdate(readPort.getVirBillVo(), "go");
+					Map<String, String> resultMap_b = dao.vbbInsert(readPort.getVirBillVo(), "go");
+					
+					dao.vdtDelete(vblMaxNo_b, "go");
+					
+					List<VblDetVo> vdtList_b = readPort.getVdt_list();
+					for (int i = 0; i < vdtList_b.size(); i++) {
+						dao.vdtInsert((VblDetVo)vdtList_b.get(i), vblMaxNo_b, "go");
+						dao.vdsInsert((VblDetVo)vdtList_b.get(i), vbbMaxNo, "go");
+					}
+					dao.getVblMaxNo("quit");
+					
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(3080);
+					writePort.setR_msg(resultMap_b.get("r_msg"));
+					writePort.setR_cmd(Integer.parseInt(resultMap_b.get("r_cmd")));
+					
+					oos.writeObject(writePort);
+					oos.flush();
+					
+					break;
+				case 3081: // 공유 견적서 리스트 조회
+					List<VbbVo> vbb_list = dao.getVbbList(readPort, "quit");
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(3081);
+					writePort.setVbb_list(vbb_list);
+					
+					oos.writeObject(writePort);
+					oos.flush();
+					
+					break;
 				case 9999: // 접속 종료
 					s.shutdownInput();
 					s.shutdownOutput();

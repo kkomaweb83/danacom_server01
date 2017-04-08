@@ -10,6 +10,8 @@ public class VirBillVo implements Serializable {
 	private String vbl_bor_answer;
 	private String vbl_title;
 	private String vbl_date;
+	private int vbb_no;
+	private String vbb_content;
 	
 	public VirBillVo() {
 	}
@@ -52,6 +54,22 @@ public class VirBillVo implements Serializable {
 
 	public void setVbl_date(String vbl_date) {
 		this.vbl_date = vbl_date;
+	}
+
+	public int getVbb_no() {
+		return vbb_no;
+	}
+
+	public void setVbb_no(int vbb_no) {
+		this.vbb_no = vbb_no;
+	}
+
+	public String getVbb_content() {
+		return vbb_content;
+	}
+
+	public void setVbb_content(String vbb_content) {
+		this.vbb_content = vbb_content;
 	}
 	
 }

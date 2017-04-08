@@ -299,7 +299,7 @@ public class DanaComDao {
 			sql.append(" , PMG_FILE");
 			sql.append(" , PRO_PCL_NO");
 			sql.append(" , PRO_MKR_NO");
-			sql.append(" , RPAD(PRO_NAME, 60, ' ') PPT_PRO_NAME");
+			sql.append(" , PRO_NAME AS PPT_PRO_NAME");
 			sql.append(" FROM PRODUCT, PRO_SUMM, PRO_IMG ");
 			sql.append(" WHERE PRO_NO = PSM_PRO_NO ");
 			sql.append(" AND PRO_NO = PMG_PRO_NO ");
@@ -457,7 +457,7 @@ public class DanaComDao {
 		
 		try {
 			sql.append(" SELECT VBL_NO, VBL_MEM_NO, VBL_BOR_ANSWER");
-			sql.append(" , RPAD(VBL_TITLE, 50, ' ') VBL_TITLE");
+			sql.append(" , VBL_TITLE");
 			sql.append(" , TO_CHAR(VBL_DATE, 'YYYY-MM-DD HH24:MI') VBL_DATE");
 			sql.append(" FROM VIR_BILL");
 			sql.append(" WHERE VBL_MEM_NO = ?");
@@ -505,7 +505,7 @@ public class DanaComDao {
 			sql.append(" , TO_CHAR(PRO_DISPRICE, '999,999,999,999')||'원' PRO_CH_PRICE");
 			sql.append(" , TO_CHAR(PRO_DISPRICE, '999,999,999,999') PRO_CH2_PRICE");
 			sql.append(" , PRO_PCL_NO");
-			sql.append(" , RPAD(PRO_NAME, 60, ' ') PRO_NAME");
+			sql.append(" , PRO_NAME");
 			sql.append(" , VDT_QUANTITY AS PST_QUANTITY");
 			sql.append(" FROM PRODUCT, VBL_DET ");
 			sql.append(" WHERE VDT_PRO_NO = PRO_NO AND VDT_VBL_NO = ? ");
@@ -691,6 +691,158 @@ public class DanaComDao {
 		}
 		
 		return resultMap;
+	}
+
+	public int getVbbMaxNo(String mode) {
+		StringBuffer sql = new StringBuffer();
+		StringBuffer vbb_no = new StringBuffer("");
+		
+		try {
+			sql.append(" SELECT NVL(MAX(VBB_NO), 0)+1 FROM VIR_BILL_BOARD");
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				vbb_no.append(rs.getString(1));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return Integer.parseInt(vbb_no.toString());
+	}
+
+	public Map<String, String> vbbInsert(VirBillVo virBillVo, String mode) {
+		StringBuffer sql = new StringBuffer();
+		Map<String, String> resultMap = new HashMap<>();
+		
+		try {
+			sql.append(" INSERT INTO VIR_BILL_BOARD");
+			sql.append(" (VBB_NO, VBB_CONTENT, VBB_MEM_NO, VBB_DATE, VBB_RECOMM ");
+			sql.append(" , VBB_COUNT, VBB_BTR_ANSWER, VBB_TITLE) VALUES ");
+			sql.append(" (?, ?, ?, SYSDATE, 0, 0, 'n', ?) ");
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setInt(1, virBillVo.getVbb_no());
+			ptmt.setString(2, virBillVo.getVbb_content());
+			ptmt.setInt(3, virBillVo.getVbl_mem_no());
+			ptmt.setString(4, virBillVo.getVbl_title());
+			int res = ptmt.executeUpdate();
+			if(res > 0){
+				resultMap.put("r_msg", "공유 견적서 등록성공");
+				resultMap.put("r_cmd", "501");
+			}else{
+				resultMap.put("r_msg", "공유 견적서 등록실패");
+				resultMap.put("r_cmd", "502");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return resultMap;
+	}
+
+	public void vdsInsert(VblDetVo vblDetVo, int vbbMaxNo, String mode) {
+		StringBuffer sql = new StringBuffer();
+		
+		try {
+			sql.append(" INSERT INTO VBL_DET_SHARE");
+			sql.append(" (VDS_NO, VDS_VBB_NO, VDS_QUANTITY, VDS_PRO_NO) VALUES ");
+			sql.append(" ((SELECT NVL(MAX(VDS_NO), 0)+1 FROM VBL_DET_SHARE) ");
+			sql.append(" , ?, ?, ?) ");
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setInt(1, vbbMaxNo);
+			ptmt.setInt(2, vblDetVo.getVdt_quantity());
+			ptmt.setInt(3, vblDetVo.getVdt_pro_no());
+			int res = ptmt.executeUpdate();
+			if(res > 0){
+				System.out.println("공유 견적서 등록성공");
+			}else{
+				System.out.println("공유 견적서 등록실패");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+	}
+
+	public List<VbbVo> getVbbList(DanaComProtocol readPort, String mode) {
+		StringBuffer sql = new StringBuffer();
+		List<VbbVo> vbb_list = new ArrayList<>();
+		
+		try {
+			sql.append(" select vbb.vbb_no, vbb.vbb_content, mem.mem_id, ");
+			sql.append(" to_char(vbb.vbb_date, 'yyyy-mm-dd') as vbb_date, ");
+			sql.append(" vbb.vbb_recomm, vbb.vbb_count, vbb.vbb_btr_answer, vbb.vbb_title ");
+			sql.append(" from vir_bill_board vbb, mem_com mem where vbb.vbb_mem_no = mem.mem_no");
+			sql.append(" order by vbb.vbb_no desc");
+			System.out.println(sql.toString());
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				VbbVo vo = new VbbVo();
+				vo.setVbb_no(rs.getString("vbb_no"));
+				vo.setVbb_content(rs.getString("vbb_content"));
+				vo.setMem_id(rs.getString("mem_id"));
+				vo.setVbb_date(rs.getString("vbb_date"));
+				vo.setVbb_recomm(rs.getString("vbb_recomm"));
+				vo.setVbb_count(rs.getString("vbb_count"));
+				vo.setVbb_btr_answer(rs.getString("vbb_btr_answer"));
+				vo.setVbb_title(rs.getString("vbb_title"));
+
+				vbb_list.add(vo);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return vbb_list;
 	}
 	
 }

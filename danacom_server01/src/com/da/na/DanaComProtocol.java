@@ -15,6 +15,8 @@ public class DanaComProtocol implements Serializable {
 	private VirBillVo virBillVo;
 	private List<VirBillVo> vir_list;
 	private List<VblDetVo> vdt_list;
+	private List<VbbVo> vbb_list;
+	private List<VbsVo> vbs_list;
 	private String pcl_no;
 	private String pcl_name;
 	private int vbl_no;
@@ -125,6 +127,18 @@ public class DanaComProtocol implements Serializable {
 	}
 	public void setTot_price(int tot_price) {
 		this.tot_price = tot_price;
+	}
+	public List<VbbVo> getVbb_list() {
+		return vbb_list;
+	}
+	public void setVbb_list(List<VbbVo> vbb_list) {
+		this.vbb_list = vbb_list;
+	}
+	public List<VbsVo> getVbs_list() {
+		return vbs_list;
+	}
+	public void setVbs_list(List<VbsVo> vbs_list) {
+		this.vbs_list = vbs_list;
 	}
 	
 }

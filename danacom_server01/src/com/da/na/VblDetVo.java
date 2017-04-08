@@ -9,6 +9,7 @@ public class VblDetVo implements Serializable {
 	private int vdt_vbl_no;
 	private int vdt_quantity;
 	private int vdt_pro_no;
+	private int vds_vbb_no;
 	
 	public VblDetVo() {
 	}
@@ -43,6 +44,14 @@ public class VblDetVo implements Serializable {
 
 	public void setVdt_pro_no(int vdt_pro_no) {
 		this.vdt_pro_no = vdt_pro_no;
+	}
+
+	public int getVds_vbb_no() {
+		return vds_vbb_no;
+	}
+
+	public void setVds_vbb_no(int vds_vbb_no) {
+		this.vds_vbb_no = vds_vbb_no;
 	}
 	
 }
