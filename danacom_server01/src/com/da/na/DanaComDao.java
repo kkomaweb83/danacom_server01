@@ -980,5 +980,37 @@ public class DanaComDao {
 		
 		return vbs_list;
 	}
+
+	public void recommVbbContent(DanaComProtocol readPort, String mode) {
+		StringBuffer sql = new StringBuffer();
+		
+		try {
+			sql.append(" update vir_bill_board set ");
+			sql.append(" vbb_recomm = vbb_recomm + 1 ");
+			sql.append(" where vbb_no = ? ");
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setString(1, readPort.getVbb_no());
+			int res = ptmt.executeUpdate();
+			if(res > 0){
+				System.out.println("공유 견적서 추천수 수정 성공");
+			}else{
+				System.out.println("공유 견적서 추천수 수정 실패");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+	}
 	
 }

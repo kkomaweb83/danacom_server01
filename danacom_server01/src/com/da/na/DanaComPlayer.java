@@ -356,6 +356,18 @@ public class DanaComPlayer extends Thread {
 					oos.flush();
 					
 					break;
+				case 3083: // 공유 견적서 추천수 추가
+					dao.recommVbbContent(readPort, "go");
+					VbbVo vbbVo_r = dao.getVbbContent(readPort, "quit");
+					
+					writePort = new DanaComProtocol();
+					writePort.setP_cmd(3083);
+					writePort.setVbbVo(vbbVo_r);
+					
+					oos.writeObject(writePort);
+					oos.flush();
+					
+					break;
 				case 9999: // 접속 종료
 					s.shutdownInput();
 					s.shutdownOutput();
