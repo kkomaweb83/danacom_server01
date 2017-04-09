@@ -844,5 +844,141 @@ public class DanaComDao {
 		
 		return vbb_list;
 	}
+
+	public void countUpVbbContent(DanaComProtocol readPort, String mode) {
+		StringBuffer sql = new StringBuffer();
+		
+		try {
+			sql.append(" update vir_bill_board set ");
+			sql.append(" vbb_count = vbb_count + 1 ");
+			sql.append(" where vbb_no = ? ");
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setString(1, readPort.getVbb_no());
+			int res = ptmt.executeUpdate();
+			if(res > 0){
+				System.out.println("공유 견적서 조회수 수정 성공");
+			}else{
+				System.out.println("공유 견적서 조회수 수정 실패");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+	}
+
+	public VbbVo getVbbContent(DanaComProtocol readPort, String mode) {
+		StringBuffer sql = new StringBuffer();
+		VbbVo vo = new VbbVo();
+		
+		try {
+			sql.append(" select vbb.vbb_no, vbb.vbb_content, mem.mem_id, ");
+			sql.append(" to_char(vbb.vbb_date, 'yyyy-mm-dd') as vbb_date, ");
+			sql.append(" vbb.vbb_recomm, vbb.vbb_count, vbb.vbb_btr_answer, vbb.vbb_title ");
+			sql.append(" from vir_bill_board vbb, mem_com mem where vbb.vbb_mem_no = mem.mem_no ");
+			sql.append(" and vbb.vbb_no = ? ");
+			sql.append(" order by vbb.vbb_no desc ");
+			System.out.println(sql.toString());
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setString(1, readPort.getVbb_no());
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				vo.setVbb_no(rs.getString("vbb_no"));
+				vo.setVbb_content(rs.getString("vbb_content"));
+				vo.setMem_id(rs.getString("mem_id"));
+				vo.setVbb_date(rs.getString("vbb_date"));
+				vo.setVbb_recomm(rs.getString("vbb_recomm"));
+				vo.setVbb_count(rs.getString("vbb_count"));
+				vo.setVbb_btr_answer(rs.getString("vbb_btr_answer"));
+				vo.setVbb_title(rs.getString("vbb_title"));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return vo;
+	}
+
+	public List<VbsVo> getVbbContentPro(DanaComProtocol readPort, String mode) {
+		StringBuffer sql = new StringBuffer();
+		List<VbsVo> vbs_list = new ArrayList<>();
+		
+		try {
+			sql.append(" SELECT VDS.VDS_NO, VDS.VDS_QUANTITY, PRO.PRO_NO, PRO.PRO_NAME, ");
+			sql.append(" TO_CHAR(PRO.PRO_DISPRICE,'L9,999,999') PRO_DISPRICE, PRO.PRO_MILEGE, ");
+			sql.append(" TO_CHAR(PRO.PRO_REGDATE, 'YYYY-MM-DD') PRO_REGDATE, ");
+			sql.append(" MKR.MKR_NAME, PCL.PCL_NAME, PCL.PCL_NO, PSM.PSM_CONENT, PMG.PMG_FILE ");
+			sql.append(" FROM VBL_DET_SHARE VDS ");
+			sql.append(" JOIN PRODUCT PRO ON VDS.VDS_PRO_NO = PRO.PRO_NO ");
+			sql.append(" JOIN MAKER MKR ON PRO.PRO_MKR_NO = MKR.MKR_NO ");
+			sql.append(" JOIN PRO_CLASS PCL ON PRO.PRO_PCL_NO = PCL.PCL_NO ");
+			sql.append(" JOIN PRO_SUMM PSM ON PRO.PRO_NO = PSM.PSM_PRO_NO ");
+			sql.append(" JOIN PRO_IMG PMG ON PRO.PRO_NO = PMG.PMG_PRO_NO ");
+			sql.append(" WHERE VDS_VBB_NO = ? ");
+			sql.append(" AND PMG.PMG_IDT_NO = 1 ");
+			sql.append(" ORDER BY PCL.PCL_NO ");
+			System.out.println(sql.toString());
+			
+			ptmt = conn.prepareStatement(sql.toString());
+			ptmt.setString(1, readPort.getVbb_no());
+			rs = ptmt.executeQuery();
+			
+			while(rs.next()){
+				VbsVo vo = new VbsVo();
+				vo.setVds_no(rs.getString("VDS_NO"));
+				vo.setVds_quantity(rs.getString("VDS_QUANTITY"));
+				vo.setPro_no(rs.getString("PRO_NO"));
+				vo.setPro_name(rs.getString("PRO_NAME"));
+				vo.setPro_disprice(rs.getString("PRO_DISPRICE"));
+				vo.setPro_milege(rs.getString("PRO_MILEGE"));
+				vo.setPro_regdate(rs.getString("PRO_REGDATE"));
+				vo.setMkr_name(rs.getString("MKR_NAME"));
+				vo.setPcl_name(rs.getString("PCL_NAME"));
+				vo.setPcl_no(rs.getString("PCL_NO"));
+				vo.setPsm_conent(rs.getString("PSM_CONENT"));
+				vo.setPmg_file(rs.getString("PMG_FILE"));
+
+				vbs_list.add(vo);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(mode.equals("quit")){
+					if(rs != null) rs.close();
+					if(ptmt != null) ptmt.close();
+					if(conn != null) conn.close();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return vbs_list;
+	}
 	
 }
